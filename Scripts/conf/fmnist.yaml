@@ -1,0 +1,74 @@
+name: 'fmnist_s'
+description: 'Fashion &  MNIST supervised lifelong learning - 2d'
+
+routing:
+  depth: 3
+  depthThr: 1e-5
+  energyThr: 0.2
+  basisSize: 3
+  embeddingSize: 100
+  primeOffset: 151
+  perUnitHashing: True
+  decoder:
+    denseParams:
+      - out_features: 60
+        act:
+          type: 'LeakyReLU'
+          params:
+        drpt: 0.2
+      - out_features: 10
+        act:
+          type: 'LeakyReLU'
+          params:
+        drpt: 0.2
+      - out_features: 10
+        act:
+          type:
+          params:
+
+units:
+  - N: 3
+    expansionThr: 1e-2
+    enableBasisUpdate: True
+    counterInit: 5
+    counterAgeFactor: 10
+    gradUpdate: True
+    coder:
+      conv:
+        in_channels: 1
+        out_channels: 6
+        kernel_size: [5,5]
+        stride: 3
+        padding: 2
+      act:
+        type: 'LeakyReLU'
+        params:
+
+  - N: 3
+    expansionThr: 1e-2
+    enableBasisUpdate: True
+    counterInit: 5
+    counterAgeFactor: 10
+    gradUpdate: True
+    coder:
+      conv:
+        in_channels: 1
+        out_channels: 8
+        kernel_size: [2,2]
+        stride: 3
+        padding: 0
+      act:
+        type: 'LeakyReLU'
+        params:
+
+training:
+  seed:
+  datasets: ['fashion','mnist']
+  epochs: [10,10]
+  extraUnits: 0 # always start with 0: no need to add units at first
+  batchSize: 32
+  inputShape: [-1,1,28,28]
+  learningRate: [0.001,0.001]
+  fullLossCoeff: 1.0
+  l1_residuCoeff: 0.8
+  l2_residuCoeff: 0

@@ -1,0 +1,13 @@
+mlflow
+torch
+torchvision
+Pillow
+tb-nightly
+future
+numpy
+pandas
+opencv-python
+matplotlib
+coloredlogs
+ruamel.yaml
+tqdm
