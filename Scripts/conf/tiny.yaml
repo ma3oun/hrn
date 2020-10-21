@@ -1,0 +1,125 @@
+name: 'tiny_s'
+description: 'Incremental TinyImageNet - Supervized'
+
+routing:
+  depth: 3
+  depthThr: 1.34e-4
+  energyThr: 0.2
+  basisSize: 5
+  embeddingSize: 4800
+  primeOffset: 2000
+  perUnitHashing: True
+  decoder:
+    denseParams:
+      - out_features: 610
+        act:
+          type: 'ReLU'
+          params:
+        drpt: 0.6
+      - out_features: 100
+        act:
+          type: 'ReLU'
+          params:
+        drpt: 0.4
+      - out_features: 200
+        act:
+          type:
+          params:
+        drpt: 0.2
+
+units:
+  - N: 3
+    expansionThr: 1e-2
+    enableBasisUpdate: True
+    counterInit: 5
+    counterAgeFactor: 7
+    gradUpdate: True
+    coder:
+      - conv:
+          in_channels: 3
+          out_channels: 63
+          kernel_size: [3,3]
+          stride: 1
+          padding: 2
+        mpool:
+          kernel_size: [3,3]
+        act:
+          type: 'LeakyReLU'
+          params:
+        drpt: 0.35
+
+  - N: 3
+    expansionThr: 1e-2
+    enableBasisUpdate: True
+    counterInit: 5
+    counterAgeFactor: 7
+    gradUpdate: True
+    coder:
+      - conv:
+          in_channels: 3
+          out_channels: 54
+          kernel_size: [3,3]
+          stride: 1
+          padding: 2
+        mpool:
+          kernel_size: [2,2]
+        act:
+          type: 'LeakyReLU'
+          params:
+        drpt: 0.35
+
+  - N: 3
+    expansionThr: 1e-2
+    enableBasisUpdate: True
+    counterInit: 5
+    counterAgeFactor: 7
+    gradUpdate: True
+    coder:
+      - conv:
+          in_channels: 3
+          out_channels: 48
+          kernel_size: [2,2]
+          stride: 1
+          padding: 2
+        mpool:
+          kernel_size: [3,3]
+        act:
+          type: 'ReLU'
+          params:
+        drpt: 0.35
+
+  - N: 3
+    expansionThr: 1e-2
+    enableBasisUpdate: True
+    counterInit: 5
+    counterAgeFactor: 7
+    gradUpdate: True
+    coder:
+      - conv:
+          in_channels: 3
+          out_channels: 48
+          kernel_size: [4,4]
+          stride: 1
+          padding: 2
+        mpool:
+          kernel_size: [2,2]
+        act:
+          type: 'LeakyReLU'
+          params:
+        drpt: 0.35
+
+training:
+  seed:
+  datasets: ['TIN_0','TIN_1','TIN_2','TIN_3','TIN_4','TIN_5','TIN_6',
+             'TIN_7','TIN_8','TIN_9']
+
+  epochs: 20
+  extraUnits: 0 # always start with 0: no need to add units at first
+  batchSize: 16
+  inputShape: [-1,3,32,32]
+  learningRate: 1.35e-3
+  fullLossCoeff: 0.5
+  l1_residuCoeff: 0.7
+  l2_residuCoeff: 0
+
+
