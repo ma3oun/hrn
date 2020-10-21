@@ -6,6 +6,8 @@ This software package contains the code to run and evaluate HRN, based on the
  paper *Continual learning using hash-routed convolutional neural networks* 
  (<https://arxiv.org/abs/2010.05880>)
 
+ ![algorithm](img/algo.png)
+
 ## 1- System requirements
 
 This software package was developed and tested using the following
