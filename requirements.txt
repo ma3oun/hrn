@@ -11,3 +11,5 @@ matplotlib
 coloredlogs
 ruamel.yaml
 tqdm
+hyperopt
+jinja2

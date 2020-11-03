@@ -70,3 +70,18 @@ This software uses MLflow (<https://mlflow.org/>) to log training metrics
  the MLflow database.
  Tensorboard can also be used to view realtime metrics. Logs can be found in
  the  created *../data* folder.
+ 
+## Hyperparameters search
+
+It is possible to search for optimal hyperparameters using HyperOpt and jinja2
+. The generic yaml file is given as a jinja2 template (see *Scripts/conf/tiny
+.yaml.j2* as an example). The generic fields exploration space is given in
+ the python script (see *Scripts/hypertrain_tiny_s.py* as an example). The
+  hyperparemeter search can be run as such:
+
+```bash
+python Scripts/training/hypertrain_tiny_s.py $(pwd)/Scripts/conf/ tiny.yaml.j2 cuda 0
+```
+
+The first parameter is the absolute path to the folder containing the jinja2
+ template and the second parameter is the name of the template file.
