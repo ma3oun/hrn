@@ -65,13 +65,13 @@ The *Scripts/conf* folder contains YAML configuration files that can be used
 
 ## 4- Data analysis
 
-This software uses MLflow (<https://mlflow.org/>) to log training metrics
+This software uses [MLflow](https://mlflow.org/)  to log training metrics
 . Running a training script will create the *hrn/mlruns* folder containing
  the MLflow database.
  Tensorboard can also be used to view realtime metrics. Logs can be found in
  the  created *../data* folder.
  
-## Hyperparameters search
+## 5- Hyperparameters search
 
 It is possible to search for optimal hyperparameters using HyperOpt and jinja2
 . The generic yaml file is given as a jinja2 template (see *Scripts/conf/tiny
