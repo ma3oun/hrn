@@ -18,7 +18,8 @@ This software package was developed and tested using the following
  
  OS: Tested on Ubuntu 18.04 LTS and 20.04 LTS
  
- Python: Tested using Python 3.7 (Anaconda3 2020.02)
+ Python: Tested using Python 3.7 and python 3.8 (Anaconda3 2020.02 and Anaconda
+  2020.07)
  
 ## 2- Installation
 
@@ -85,3 +86,17 @@ python Scripts/training/hypertrain_tiny_s.py $(pwd)/Scripts/conf/ tiny.yaml.j2 c
 
 The first parameter is the absolute path to the folder containing the jinja2
  template and the second parameter is the name of the template file.
+
+## 6- Paper experiments
+Configuration files used for the experiments presented in the paper can be
+ found in the *Scripts/conf/paper* folder. 
+ The *Scripts/conf/paper/ablation* folder contains the configuration files
+  used for the ablation study (see the description inside each file for more
+   detail).
+Scripts for Elastic Weight Consolidation (**EWC**), Encoder based Lifelong
+ Learning  (**ELL**) and Vanilla Convolution (**VC**) are available in the
+  *Scripts/benchmarks* folder. For example, to run a vanilla convolution on a
+   pairwise-MNIST configuration:
+```bash
+python Scripts/training/benchmarks/training_vc.py Scripts/conf/paper/vc/pmnist_vc.yaml cuda -d 0
+```
