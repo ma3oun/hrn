@@ -1,0 +1,63 @@
+name: 'icifar100_svhn_ewc'
+description: 'Incremental Cifar100 - SVHNEWC supervised lifelong learning - 2d'
+
+decoder:
+  denseParams:
+    - out_features: 200
+      bn:
+      act:
+        type: 'ReLU'
+        params:
+      drpt: 0.5
+    - out_features: 100
+      bn:
+      act:
+        type: 'ReLU'
+        params:
+      drpt: 0.4
+    - out_features: 100
+      bn:
+      act:
+        type:
+        params:
+      drpt: 0.2
+
+coder:
+  - conv:
+      in_channels: 3
+      out_channels: 36
+      kernel_size: [3,3]
+      stride: 2
+      padding: 2
+    bn:
+    act:
+      type: 'LeakyReLU'
+      params:
+    drpt: 0.3
+  - conv:
+      in_channels: 36
+      out_channels: 99
+      kernel_size: [2,2]
+      stride: 1
+      padding: 1
+    bn:
+    act:
+      type: 'LeakyReLU'
+      params:
+    drpt: 0.3
+
+training:
+  seed: 512
+  embeddingSize: 32076
+  sampleSize: 200 #200, 200: OK
+  importance: 250 #400, 200: OK
+  datasets: ['svhn','cifar100_0','cifar100_1','cifar100_2','cifar100_3',
+             'cifar100_4',
+             'cifar100_5','cifar100_6','cifar100_7','cifar100_8','cifar100_9']
+  epochs: [8,15,15,15,15,15,15,15,15,15,15]
+  batchSize: 32
+  inputShape: [-1,3,32,32]
+  learningRate: 0.001
+  fullLossCoeff: 1.0
+
+

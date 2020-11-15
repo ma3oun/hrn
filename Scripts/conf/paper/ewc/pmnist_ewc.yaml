@@ -1,0 +1,55 @@
+name: 'pmnist_ewc'
+description: 'Pairwise MNIST EWC supervised lifelong learning - 2d'
+
+decoder:
+  denseParams:
+    - out_features: 60
+      act:
+        type: 'LeakyReLU'
+        params:
+      drpt: 0.2
+    - out_features: 10
+      act:
+        type: 'LeakyReLU'
+        params:
+      drpt: 0.2
+    - out_features: 10
+      act:
+        type:
+        params:
+
+coder:
+  - conv:
+      in_channels: 1
+      out_channels: 16
+      kernel_size: [5,5]
+      stride: 3
+      padding: 2
+    bn:
+    act:
+      type: 'LeakyReLU'
+      params:
+  - conv:
+      in_channels: 16
+      out_channels: 32
+      kernel_size: [2,2]
+      stride: 3
+      padding: 0
+    bn:
+    act:
+      type: 'LeakyReLU'
+      params:
+
+training:
+  seed: 570
+  embeddingSize: 288
+  sampleSize: 200
+  importance: 1024
+  datasets: ['mnist_01','mnist_23','mnist_45','mnist_67','mnist_89']
+  epochs: [5,5,5,5,5]
+  batchSize: 16
+  inputShape: [-1,1,28,28]
+  learningRate: 0.001
+  fullLossCoeff: 1.0
+
+

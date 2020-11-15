@@ -1,4 +1,4 @@
-name: 'pmnist_s'
+name: 'pmnist_s09'
 description: 'Pairwise MNIST lifelong learning - 2d
               higher embedding size'
 
@@ -67,7 +67,7 @@ units:
         params:
 
 training:
-  seed:
+  seed: 566
   datasets: ['mnist_01','mnist_23','mnist_45','mnist_67','mnist_89']
   epochs: [5,5,5,5,5]
   extraUnits: [0,0,0,0,0] # always start with 0: no need to add units at first

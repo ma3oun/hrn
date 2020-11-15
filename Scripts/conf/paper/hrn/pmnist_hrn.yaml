@@ -1,6 +1,5 @@
-name: 'pmnist_s'
-description: 'Pairwise MNIST lifelong learning - 2d
-              higher embedding size'
+name: 'pmnist_hrn'
+description: 'Pairwise MNIST lifelong learning - 2d'
 
 routing:
   depth: 3

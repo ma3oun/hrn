@@ -1,13 +1,13 @@
-name: 'pmnist_s'
+name: 'pmnist_s02'
 description: 'Pairwise MNIST lifelong learning - 2d
-              higher embedding size'
+              More epochs'
 
 routing:
   depth: 3
   depthThr: 1e-5
   energyThr: 0.2
   basisSize: 3
-  embeddingSize: 300
+  embeddingSize: 100
   primeOffset: 151
   perUnitHashing: True
   decoder:
@@ -67,7 +67,7 @@ units:
         params:
 
 training:
-  seed:
+  seed: 114
   datasets: ['mnist_01','mnist_23','mnist_45','mnist_67','mnist_89']
   epochs: [5,5,5,5,5]
   extraUnits: [0,0,0,0,0] # always start with 0: no need to add units at first
