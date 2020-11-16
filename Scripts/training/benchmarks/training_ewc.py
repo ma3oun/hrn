@@ -19,7 +19,7 @@ from hrn.routing.decoder import Decoder
 from hrn.routing.codecs import Codec, Direction
 from hrn.config_flags import *
 
-logger = logging.getLogger("hrn")
+logger = logging.getLogger("ewc")
 logger.addHandler(logging.StreamHandler())
 
 coloredlogs.install(

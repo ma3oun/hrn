@@ -19,7 +19,7 @@ from hrn.datasets.loader import getDatasets
 from hrn.routing.decoder import Decoder
 from hrn.routing.codecs import Codec, Direction
 
-logger = logging.getLogger("hrn")
+logger = logging.getLogger("ell")
 logger.addHandler(logging.StreamHandler())
 
 coloredlogs.install(
