@@ -3,16 +3,18 @@ Supervised lifelong training - EWC
 """
 
 from typing import Union, Tuple, List
-from tqdm import tqdm
 from copy import deepcopy
+from itertools import chain
+from tqdm import tqdm
 
-import argparse
+import argparse, gc, os
 import logging, coloredlogs, mlflow
 import ruamel.yaml as yaml
 import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+
 from torch.utils.tensorboard.writer import SummaryWriter
 from hrn.datasets.loader import getDatasets
 from hrn.routing.decoder import Decoder
@@ -30,20 +32,46 @@ coloredlogs.install(
 )
 
 
-class VanillaModel(torch.nn.Module):
-    def __init__(self, decoder: Decoder, coder: Codec = None):
-        super().__init__()
-        if not coder is None:
-            self.coder = coder
-        else:
-            self.coder = torch.nn.Identity()
-        self.decoder = decoder
+def log_scalars(scalars, writer, step):
+    """Log a scalar value to both MLflow and TensorBoard"""
+    for scalar, name in scalars:
+        value = scalar.item()
+        writer.add_scalar(name, value, step)
+        mlflow.log_metric(name, value, step)
 
-    def forward(self, x) -> torch.Tensor:
-        y = self.coder(x)
-        y = torch.flatten(y, start_dim=1)
-        y = self.decoder(y)
-        return y
+
+def getTrainingSamples(
+    datasets: Union[str, List],
+    sampleSize: int,
+    trainingDataSize: tuple,
+    trainingDataChannels: int,
+) -> List:
+    """
+    This is used for Fisher matrix estimation
+    Args:
+      trainingDataChannels: (tuple) Training data channels
+      trainingDataSize: (int) Training data size
+      datasets: (str or list) List of datasets to sample from
+      sampleSize: (int) Total sample size
+
+    Returns: (list) Samples list
+
+    """
+
+    if type(datasets) is str:
+        datasetSampleSize = int(np.ceil(sampleSize / len(datasets)))
+    else:
+        datasetSampleSize = sampleSize
+    fullDatasets = getDatasets(datasets, 1, trainingDataSize, trainingDataChannels)
+    if not type(fullDatasets) is list:
+        fullDatasets = [fullDatasets]
+    samples = []
+    for dataset in fullDatasets:
+        train_loader, _ = dataset
+        samplesIdx = np.random.randint(0, len(train_loader.dataset), datasetSampleSize)
+        currentSamples = [train_loader.dataset[i][0] for i in samplesIdx]
+        samples.extend(currentSamples)
+    return samples
 
 
 class EWC(object):
@@ -99,91 +127,52 @@ class EWC(object):
         return loss
 
 
-def getTrainingSamples(
-    datasets: Union[str, List],
-    sampleSize: int,
-    trainingDataSize: tuple,
-    trainingDataChannels: int,
-) -> List:
-    """
-    This is used for Fisher matrix estimation
-    Args:
-      datasets: (str or list) List of datasets to sample from
-      sampleSize: (int) Total sample size
-
-    Returns: (list) Samples list
-
-    """
-
-    if type(datasets) is str:
-        datasetSampleSize = int(np.ceil(sampleSize / len(datasets)))
-    else:
-        datasetSampleSize = sampleSize
-    fullDatasets = getDatasets(datasets, 1, trainingDataSize, trainingDataChannels)
-    if not type(fullDatasets) is list:
-        fullDatasets = [fullDatasets]
-    samples = []
-    for dataset in fullDatasets:
-        train_loader, _ = dataset
-        samplesIdx = np.random.randint(0, len(train_loader.dataset), datasetSampleSize)
-        currentSamples = [train_loader.dataset[i][0] for i in samplesIdx]
-        samples.extend(currentSamples)
-    return samples
-
-
-def log_scalars(scalars, writer, step):
-    """Log a scalar value to both MLflow and TensorBoard"""
-    for scalar, name in scalars:
-        value = scalar.item()
-        writer.add_scalar(name, value, step)
-        mlflow.log_metric(name, value, step)
-
-
 def train(
     model: torch.nn.Module,
+    decoder: torch.nn.Module,
     ewc: EWC,
+    importance: np.float32,
     device: torch.device,
     train_loader: torch.utils.data.DataLoader,
     optimizer: Union[optim.Adam, optim.SGD],
-    nClasses: int,
     epoch: int,
     reconCoeff: np.float32,
-    importance: np.float32,
     writer: SummaryWriter = None,
 ):
 
     torch.cuda.empty_cache()
 
     model.train()
+    decoder.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         data = data.to(device)
-        target = target.to(device) % nClasses
+        target = target.to(device)
         optimizer.zero_grad()
-        outputData = model(data)
+        decoderData = model(data).flatten(start_dim=1)
+        outputData = decoder(decoderData)
 
         output = F.log_softmax(outputData, dim=1)
         reconLoss = reconCoeff * F.nll_loss(output, target)
+
         if not ewc is None:
             penalty = importance * ewc.penalty(model)
-            loss = reconLoss + penalty
-
         else:
             penalty = torch.tensor(0)
-            loss = reconLoss
+
+        loss = reconLoss + penalty
         loss.backward()
         optimizer.step()
 
         if batch_idx % 100 == 0:
             logger.info(
-                f"Train Epoch: {epoch} [{batch_idx * len(data)}/"
-                f"{len(train_loader.dataset)} "
+                f"Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} "
                 f"({100. * batch_idx / len(train_loader):.0f}%)]\n"
                 f"\tLoss: {loss.item():.4f}"
                 f"\tXentropy: {reconLoss.item():.4f}"
             )
             fullStep = len(train_loader) * (epoch - 1) + batch_idx
-            scalars = [loss, reconLoss, penalty]
-            names = ["train/Loss", "train/Xentropy", "train/penalty"]
+            scalars = [loss, reconLoss]
+            names = ["train/Loss", "train/Xentropy"]
             log_scalars(zip(scalars, names), writer, fullStep)
 
         # For testing purposes only
@@ -195,9 +184,9 @@ def train(
 
 def test(
     model: torch.nn.Module,
+    decoder: torch.nn.Module,
     device: torch.device,
     test_loader: torch.utils.data.DataLoader,
-    nClasses: int,
     train_loader_length: int,
     epoch: int,
     reconCoeff: np.float32,
@@ -207,6 +196,7 @@ def test(
     torch.cuda.empty_cache()
 
     model.eval()
+    decoder.eval()
     test_loss = 0
     correct = 0
 
@@ -214,8 +204,9 @@ def test(
     with torch.no_grad():
         for batch_idx, (data, target) in enumerate(test_loader):
             data = data.to(device)
-            target = target.to(device) % nClasses
-            outputData = model(data)
+            target = target.to(device)
+            decoderData = model(data).flatten(start_dim=1)
+            outputData = decoder(decoderData)
 
             output = F.log_softmax(outputData, dim=1)
             predictedLabel = outputData.argmax(dim=1, keepdim=True)
@@ -239,15 +230,33 @@ def test(
     return accuracyPercent.item(), correct.item()
 
 
+def encodeDataset(
+    model: torch.nn.Module,
+    device: torch.device,
+    dataLoader: torch.utils.data.DataLoader,
+) -> list:
+    dataBuffer = []
+    model.eval()
+
+    with torch.no_grad():
+        for batch_idx, (data, target) in tqdm(
+            enumerate(dataLoader), total=len(dataLoader)
+        ):
+            data = data.to(device)
+            target = target.to(device)
+            decoderData = model(data)
+            dataBuffer.append((decoderData, target))
+
+    return dataBuffer
+
+
 def testClassifier(
     classifier: torch.nn.Module,
     testDataBuffer: List[Tuple],
-    nClasses: int,
     datasetSize: int,
     epoch: int,
-    device,
     testName: str = "supervised",
-) -> float:
+) -> Tuple[float, int]:
     """
     Test a trained classifier using a given test dataset
 
@@ -268,11 +277,10 @@ def testClassifier(
     for batch_idx, (data, target) in tqdm(
         enumerate(testDataBuffer), total=len(testDataBuffer)
     ):
-        data = data.to(device)
-        target = target.to(device) % nClasses
-        outputData = classifier(data)
-        predictedLabel = outputData.argmax(dim=1, keepdim=True)
-        correct += predictedLabel.eq(target.view_as(predictedLabel)).sum().item()
+        with torch.no_grad():
+            outputData = classifier(data.flatten(start_dim=1))
+            predictedLabel = outputData.argmax(dim=1, keepdim=True)
+            correct += predictedLabel.eq(target.view_as(predictedLabel)).sum().item()
     acc = 100.0 * correct / datasetSize
     logger.info(
         f"\nAccuracy at epoch {epoch + 1}:"
@@ -409,38 +417,35 @@ def run(runParams: dict) -> float:
 
         coder = Codec(
             0, Direction.Forward, params["training"]["inputShape"], params["coder"]
-        )
-        classifier = Decoder(
-            params["decoder"],
-            params["training"]["embeddingSize"],
-            0,
-            params["training"]["inputShape"],
-            device,
-            False,
-        )
-        ewcModel = VanillaModel(classifier, coder).to(device)
+        ).to(device)
         logDir = "../data/logs/" + modelName
         tbWriter = SummaryWriter(logDir)
 
         previousTestData = []
+        previousClassifiers = []
         for datasetIdx, dataset in enumerate(dataList):
+            embeddingSize = params["training"]["embeddingSize"]
+
+            # one decoder per dataset
+            classifier = Decoder(
+                _asList(params["decoder"], nDatasets)[datasetIdx],
+                embeddingSize,
+                0,
+                params["training"]["inputShape"],
+                device,
+                False,
+            ).to(device)
+
             logger.info(f"\n\t==== {dataset}: TRAINING ====\n")
             train_loader, test_loader = getDatasets(
                 dataset, batchSize, dataSize, dataChannels
             )
-            minLabel = np.min(
-                [test_loader.dataset[i][1] for i in range(len(test_loader.dataset))]
-            )
-            maxLabel = np.max(
-                [test_loader.dataset[i][1] for i in range(len(test_loader.dataset))]
-            )
-            nClasses = maxLabel - minLabel + 1
-            optimParams = ewcModel.parameters()
-            optimizer = optim.SGD(optimParams, lr=learningRate[datasetIdx])
 
+            optimParams = chain(coder.parameters(), classifier.parameters())
+            optimizer = optim.Adam(optimParams, lr=learningRate[datasetIdx])
             if datasetIdx > 0:
                 ewc = EWC(
-                    ewcModel,
+                    coder,
                     getTrainingSamples(
                         dataList[:datasetIdx], ewcSampleSize, dataSize, dataChannels
                     ),
@@ -454,23 +459,23 @@ def run(runParams: dict) -> float:
             currentTotalSize = len(test_loader.dataset)
             for epoch in range(1, epochs[datasetIdx] + 1):
                 train(
-                    ewcModel,
+                    coder,
+                    classifier,
                     ewc,
+                    ewcCoeff,
                     device,
                     train_loader,
                     optimizer,
-                    nClasses,
                     epoch,
                     fullLossFactor[datasetIdx],
-                    ewcCoeff,
                     tbWriter,
                 )
                 logger.info(f"\n\t==== {dataset}: TEST ({dataset}) ====\n")
                 currentAcc, currentCorrect = test(
-                    ewcModel,
+                    coder,
+                    classifier,
                     device,
                     test_loader,
-                    nClasses,
                     len(train_loader),
                     epoch,
                     fullLossFactor[datasetIdx],
@@ -496,14 +501,18 @@ def run(runParams: dict) -> float:
                 )
                 testDatasetSize = len(pTestData.dataset)
                 totalDatasetSize += testDatasetSize
+                logger.info("Re-encoding test data")
+                newEncodedTestData = encodeDataset(coder, device, pTestData)
+                # saveData(newEncodedTestData,
+                #          f'../data/{modelName}_lifelong_{previousDataName}'
+                #          f'_testEmbeddings.npz')
+                pClassifier = previousClassifiers[pIdx].to(device)
 
                 previousAcc, previousCorrect = testClassifier(
-                    ewcModel,
-                    pTestData,
-                    nClasses,
+                    pClassifier,
+                    newEncodedTestData,
                     testDatasetSize,
                     epochs[datasetIdx],
-                    device,
                     f"lifelong/{previousDataName}",
                 )
 
@@ -519,6 +528,7 @@ def run(runParams: dict) -> float:
                 )
 
             previousTestData.append(test_loader)
+            previousClassifiers.append(classifier.cpu())
 
         mlflow.log_artifacts(logDir, artifact_path="events")
 
