@@ -1,12 +1,12 @@
-name: 'pmnist_s05'
+name: 'pmnist_small_basis'
 description: 'Pairwise MNIST lifelong learning - 2d
-              No basis update - No grad update'
+              Small basis'
 
 routing:
   depth: 3
   depthThr: 1e-5
   energyThr: 0.2
-  basisSize: 3
+  basisSize: 2
   embeddingSize: 100
   primeOffset: 151
   perUnitHashing: True
@@ -32,10 +32,10 @@ routing:
 units:
   - N: 2
     expansionThr: 1e-2
-    enableBasisUpdate: False
+    enableBasisUpdate: True
     counterInit: 5
     counterAgeFactor: 1.2
-    gradUpdate: False
+    gradUpdate: True
     coder:
       conv:
         in_channels: 1
@@ -50,10 +50,10 @@ units:
 
   - N: 2
     expansionThr: 1e-2
-    enableBasisUpdate: False
+    enableBasisUpdate: True
     counterInit: 5
     counterAgeFactor: 1.2
-    gradUpdate: False
+    gradUpdate: True
     coder:
       conv:
         in_channels: 1

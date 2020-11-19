@@ -1,12 +1,12 @@
-name: 'pmnist_s01'
+name: 'pmnist_large_basis'
 description: 'Pairwise MNIST lifelong learning - 2d
-              Baseline'
+              Large basis'
 
 routing:
   depth: 3
   depthThr: 1e-5
   energyThr: 0.2
-  basisSize: 3
+  basisSize: 5
   embeddingSize: 100
   primeOffset: 151
   perUnitHashing: True
@@ -69,13 +69,13 @@ units:
 training:
   seed: 566
   datasets: ['mnist_01','mnist_23','mnist_45','mnist_67','mnist_89']
-  epochs: [2,2,1,1,1]
+  epochs: [5,5,5,5,5]
   extraUnits: [0,0,0,0,0] # always start with 0: no need to add units at first
   batchSize: 16
   inputShape: [-1,1,28,28]
   learningRate: 0.001
-  fullLossCoeff: 2.0
-  l1_residuCoeff: 0
+  fullLossCoeff: 1.0
+  l1_residuCoeff: 1.0
   l2_residuCoeff: 0
 
 

@@ -1,13 +1,13 @@
-name: 'pmnist_s06'
+name: 'pmnist_high_embedding'
 description: 'Pairwise MNIST lifelong learning - 2d
-              High aging rate'
+              High embedding size'
 
 routing:
   depth: 3
   depthThr: 1e-5
   energyThr: 0.2
   basisSize: 3
-  embeddingSize: 100
+  embeddingSize: 500
   primeOffset: 151
   perUnitHashing: True
   decoder:
@@ -34,7 +34,7 @@ units:
     expansionThr: 1e-2
     enableBasisUpdate: True
     counterInit: 5
-    counterAgeFactor: 2
+    counterAgeFactor: 1.2
     gradUpdate: True
     coder:
       conv:
@@ -52,7 +52,7 @@ units:
     expansionThr: 1e-2
     enableBasisUpdate: True
     counterInit: 5
-    counterAgeFactor: 2
+    counterAgeFactor: 1.2
     gradUpdate: True
     coder:
       conv:

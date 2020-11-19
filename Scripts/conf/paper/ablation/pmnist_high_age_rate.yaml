@@ -1,12 +1,12 @@
-name: 'pmnist_s08'
+name: 'pmnist_high_age_rate'
 description: 'Pairwise MNIST lifelong learning - 2d
-              Big basis'
+              High aging rate'
 
 routing:
   depth: 3
   depthThr: 1e-5
   energyThr: 0.2
-  basisSize: 4
+  basisSize: 3
   embeddingSize: 100
   primeOffset: 151
   perUnitHashing: True
@@ -34,7 +34,7 @@ units:
     expansionThr: 1e-2
     enableBasisUpdate: True
     counterInit: 5
-    counterAgeFactor: 1.2
+    counterAgeFactor: 10
     gradUpdate: True
     coder:
       conv:
@@ -52,7 +52,7 @@ units:
     expansionThr: 1e-2
     enableBasisUpdate: True
     counterInit: 5
-    counterAgeFactor: 1.2
+    counterAgeFactor: 10
     gradUpdate: True
     coder:
       conv:

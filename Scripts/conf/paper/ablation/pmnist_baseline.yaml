@@ -1,13 +1,13 @@
-name: 'pmnist_s10'
+name: 'pmnist_baseline'
 description: 'Pairwise MNIST lifelong learning - 2d
-              low embedding size'
+              Baseline'
 
 routing:
   depth: 3
   depthThr: 1e-5
   energyThr: 0.2
   basisSize: 3
-  embeddingSize: 50
+  embeddingSize: 100
   primeOffset: 151
   perUnitHashing: True
   decoder:

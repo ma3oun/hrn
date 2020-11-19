@@ -1,6 +1,6 @@
-name: 'pmnist_s03'
+name: 'pmnist_high_lambda'
 description: 'Pairwise MNIST lifelong learning - 2d
-              No grad update'
+              High lambda'
 
 routing:
   depth: 3
@@ -35,7 +35,7 @@ units:
     enableBasisUpdate: True
     counterInit: 5
     counterAgeFactor: 1.2
-    gradUpdate: False
+    gradUpdate: True
     coder:
       conv:
         in_channels: 1
@@ -53,7 +53,7 @@ units:
     enableBasisUpdate: True
     counterInit: 5
     counterAgeFactor: 1.2
-    gradUpdate: False
+    gradUpdate: True
     coder:
       conv:
         in_channels: 1
@@ -75,7 +75,7 @@ training:
   inputShape: [-1,1,28,28]
   learningRate: 0.001
   fullLossCoeff: 1.0
-  l1_residuCoeff: 1.0
+  l1_residuCoeff: 10.0
   l2_residuCoeff: 0
 
 

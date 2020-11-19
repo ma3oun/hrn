@@ -1,13 +1,13 @@
-name: 'pmnist_s09'
+name: 'pmnist_low_expThr'
 description: 'Pairwise MNIST lifelong learning - 2d
-              higher embedding size'
+              Low expansion threshold'
 
 routing:
   depth: 3
   depthThr: 1e-5
   energyThr: 0.2
   basisSize: 3
-  embeddingSize: 300
+  embeddingSize: 100
   primeOffset: 151
   perUnitHashing: True
   decoder:
@@ -31,7 +31,7 @@ routing:
 
 units:
   - N: 2
-    expansionThr: 1e-2
+    expansionThr: 1e-3
     enableBasisUpdate: True
     counterInit: 5
     counterAgeFactor: 1.2
@@ -49,7 +49,7 @@ units:
         params:
 
   - N: 2
-    expansionThr: 1e-2
+    expansionThr: 1e-3
     enableBasisUpdate: True
     counterInit: 5
     counterAgeFactor: 1.2

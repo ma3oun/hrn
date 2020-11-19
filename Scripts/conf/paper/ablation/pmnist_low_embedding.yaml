@@ -1,13 +1,13 @@
-name: 'pmnist_s04'
+name: 'pmnist_low_embedding'
 description: 'Pairwise MNIST lifelong learning - 2d
-              No basis update'
+              Low embedding size'
 
 routing:
   depth: 3
   depthThr: 1e-5
   energyThr: 0.2
   basisSize: 3
-  embeddingSize: 100
+  embeddingSize: 50
   primeOffset: 151
   perUnitHashing: True
   decoder:
@@ -32,7 +32,7 @@ routing:
 units:
   - N: 2
     expansionThr: 1e-2
-    enableBasisUpdate: False
+    enableBasisUpdate: True
     counterInit: 5
     counterAgeFactor: 1.2
     gradUpdate: True
@@ -50,7 +50,7 @@ units:
 
   - N: 2
     expansionThr: 1e-2
-    enableBasisUpdate: False
+    enableBasisUpdate: True
     counterInit: 5
     counterAgeFactor: 1.2
     gradUpdate: True

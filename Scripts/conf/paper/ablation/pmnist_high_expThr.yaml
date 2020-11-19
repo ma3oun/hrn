@@ -1,6 +1,6 @@
-name: 'pmnist_s02'
+name: 'pmnist_high_expThr'
 description: 'Pairwise MNIST lifelong learning - 2d
-              More epochs'
+              High expansion threshold'
 
 routing:
   depth: 3
@@ -31,7 +31,7 @@ routing:
 
 units:
   - N: 2
-    expansionThr: 1e-2
+    expansionThr: 0.1
     enableBasisUpdate: True
     counterInit: 5
     counterAgeFactor: 1.2
@@ -49,7 +49,7 @@ units:
         params:
 
   - N: 2
-    expansionThr: 1e-2
+    expansionThr: 0.1
     enableBasisUpdate: True
     counterInit: 5
     counterAgeFactor: 1.2
@@ -67,7 +67,7 @@ units:
         params:
 
 training:
-  seed: 114
+  seed: 566
   datasets: ['mnist_01','mnist_23','mnist_45','mnist_67','mnist_89']
   epochs: [5,5,5,5,5]
   extraUnits: [0,0,0,0,0] # always start with 0: no need to add units at first

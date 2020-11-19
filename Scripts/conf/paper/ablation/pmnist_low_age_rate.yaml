@@ -1,12 +1,12 @@
-name: 'pmnist_s07'
+name: 'pmnist_low_age_rate'
 description: 'Pairwise MNIST lifelong learning - 2d
-              Small basis'
+              Low aging rate'
 
 routing:
   depth: 3
   depthThr: 1e-5
   energyThr: 0.2
-  basisSize: 2
+  basisSize: 3
   embeddingSize: 100
   primeOffset: 151
   perUnitHashing: True
@@ -34,7 +34,7 @@ units:
     expansionThr: 1e-2
     enableBasisUpdate: True
     counterInit: 5
-    counterAgeFactor: 1.2
+    counterAgeFactor: 1.1
     gradUpdate: True
     coder:
       conv:
@@ -52,7 +52,7 @@ units:
     expansionThr: 1e-2
     enableBasisUpdate: True
     counterInit: 5
-    counterAgeFactor: 1.2
+    counterAgeFactor: 1.1
     gradUpdate: True
     coder:
       conv:
